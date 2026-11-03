@@ -1,12 +1,14 @@
+use std::net::TcpListener;
+
 use actix_web::{App, HttpRequest, HttpResponse, HttpServer, Responder, dev::Server, web};
 
-pub fn run() -> Result<Server, std::io::Error> {
+pub fn run(listener: TcpListener) -> Result<Server, std::io::Error> {
     let app = HttpServer::new(|| {
         App::new()
             .route("/", web::get().to(greet))
             .route("/health", web::get().to(health))
     })
-    .bind("127.0.0.1:8000")?
+    .listen(listener)?
     .run();
     // .await
     Ok(app)

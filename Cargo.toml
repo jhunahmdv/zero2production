@@ -1,6 +1,6 @@
 [package]
 name = "z2p"
-version = "3.5.1"
+version = "3.5.1.2"
 edition = "2024"
 
 [lib]
