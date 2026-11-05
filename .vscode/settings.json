@@ -2,5 +2,18 @@
     "workbench.colorCustomizations": {
         
 
-    }
+    },
+    "sqltools.connections": [
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "z2p-postgres",
+            "database": "newsletter",
+            "username": "postgres",
+            "password": "password"
+        }
+    ]
 }
