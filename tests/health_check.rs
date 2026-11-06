@@ -2,6 +2,9 @@
 
 use std::net::TcpListener;
 
+use sqlx::{Connection, PgConnection};
+use z2p::configuration::DatabaseSettings;
+
 #[tokio::test]
 async fn health_endpoint_returns_ok() {
     let address = spawn_app();
@@ -14,6 +17,23 @@ async fn health_endpoint_returns_ok() {
 
     assert!(response.status().is_success());
     assert_eq!(response.status(), reqwest::StatusCode::OK);
+}
+
+#[tokio::test]
+async fn database_health_check() {
+    let configuration = z2p::configuration::get_configuration().expect("Failed to read configuration");
+    let connection_str = DatabaseSettings::connection_string(&configuration.database);
+    let mut connection = PgConnection::connect(&connection_str).await.expect("Failed to connect to database");
+    assert!(connection.ping().await.is_ok());
+}
+
+#[tokio::test]
+async fn database_select_from_like_a_dual() {
+    let configuration = z2p::configuration::get_configuration().expect("Failed to read configuration");
+    let connection_str = DatabaseSettings::connection_string(&configuration.database);
+    let mut connection = PgConnection::connect(&connection_str).await.expect("Failed to connect to database");
+    let result = sqlx::query("SELECT 1").fetch_one(&mut connection).await;
+    assert!(result.is_ok());
 }
 
 #[tokio::test]
@@ -69,7 +89,6 @@ fn spawn_app() -> String {
     // Launch the server as a background task
     // tokio::spawn returns a handle to the spawned future,
     // start running in the background immediately, even if we don't await the returned JoinHandle
-    // We have no use for it here, hence the non-binding let
     let app = z2p::startup::run(listener).expect("Failed to run app");
     let _ = tokio::spawn(app);
     format!("http://127.0.0.1:{}", port)

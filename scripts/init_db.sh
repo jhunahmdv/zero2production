@@ -15,17 +15,25 @@ CONTAINER_NAME="zero-2-production"
 # Allow to skip Docker if a dockerized Postgres database is already running
 if [[ -z "${SKIP_DOCKER}" ]]
 then
-    # Launch postgres using Docker
-    CONTAINER_ID=$(docker run \
-                    --name ${CONTAINER_NAME} \
-                    -e POSTGRES_USER=${DB_USER} \
-                    -e POSTGRES_PASSWORD=${DB_PASSWORD} \
-                    -e POSTGRES_DB=${DB_NAME} \
-                    -p ${DB_PORT}:5432 \
-                    -d postgres \
-                    postgres -N 1000
-                    # ^ Increased maximum number of connections for testing purposes
-    )
+    # Reuse the container if it already exists (running or stopped),
+    # otherwise `docker run --name` fails with a name conflict.
+    CONTAINER_ID=$(docker ps -aq --filter "name=^${CONTAINER_NAME}$")
+    if [[ -n "${CONTAINER_ID}" ]]
+    then
+        docker start "${CONTAINER_ID}" > /dev/null
+    else
+        # Launch postgres using Docker
+        CONTAINER_ID=$(docker run \
+                        --name ${CONTAINER_NAME} \
+                        -e POSTGRES_USER=${DB_USER} \
+                        -e POSTGRES_PASSWORD=${DB_PASSWORD} \
+                        -e POSTGRES_DB=${DB_NAME} \
+                        -p ${DB_PORT}:5432 \
+                        -d postgres \
+                        postgres -N 1000
+                        # ^ Increased maximum number of connections for testing purposes
+        )
+    fi
 
     # Keep pinging Postgres until it's ready to accept commands
     export PGPASSWORD="${DB_PASSWORD}"
