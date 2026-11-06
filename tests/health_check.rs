@@ -70,7 +70,7 @@ fn spawn_app() -> String {
     // tokio::spawn returns a handle to the spawned future,
     // start running in the background immediately, even if we don't await the returned JoinHandle
     // We have no use for it here, hence the non-binding let
-    let app = z2p::run(listener).expect("Failed to run app");
+    let app = z2p::startup::run(listener).expect("Failed to run app");
     let _ = tokio::spawn(app);
     format!("http://127.0.0.1:{}", port)
 }

@@ -1,4 +1,4 @@
-use z2p::run;
+use z2p::startup::run;
 
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
